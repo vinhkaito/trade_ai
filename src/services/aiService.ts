@@ -139,55 +139,83 @@ ${currentPosition ? `
       ? 'https://openrouter.ai/api/v1/chat/completions'
       : 'https://api.openai.com/v1/chat/completions');
 
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`,
-        ...(provider === 'openrouter' ? {
-          'HTTP-Referer': window.location.origin,
-          'X-Title': 'Crypto Trading Bot'
-        } : {})
-      },
-      body: JSON.stringify({
-        model: model || (provider === 'openrouter' ? 'openai/gpt-3.5-turbo' : 'gpt-3.5-turbo'),
-        messages: [
-          { 
-            role: 'system', 
-            content: 'شما یک تحلیلگر حرفه‌ای معاملات ارزهای دیجیتال با تخصص در تحلیل تکنیکال هستید. همیشه پاسخ‌های خود را به صورت JSON معتبر و به زبان فارسی ارائه دهید.' 
-          },
-          { role: 'user', content: prompt }
-        ],
-        temperature: 0.7,
-      })
-    });
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`خطای API هوش مصنوعی: ${response.statusText} - ${errorText}`);
+    try {
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${apiKey}`,
+          ...(provider === 'openrouter' ? {
+            'HTTP-Referer': window.location.origin,
+            'X-Title': 'Crypto Trading Bot'
+          } : {})
+        },
+        body: JSON.stringify({
+          model: model || (provider === 'openrouter' ? 'openai/gpt-3.5-turbo' : 'gpt-3.5-turbo'),
+          messages: [
+            { 
+              role: 'system', 
+              content: 'شما یک تحلیلگر حرفه‌ای معاملات ارزهای دیجیتال با تخصص در تحلیل تکنیکال هستید. همیشه پاسخ‌های خود را به صورت JSON معتبر و به زبان فارسی ارائه دهید.' 
+            },
+            { role: 'user', content: prompt }
+          ],
+          temperature: 0.7,
+        }),
+        signal: controller.signal
+      });
+
+      clearTimeout(timeoutId);
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`خطای API هوش مصنوعی: ${response.statusText} - ${errorText}`);
+      }
+
+      const data = await response.json();
+      return data.choices[0].message.content;
+    } catch (error: any) {
+      clearTimeout(timeoutId);
+      if (error.name === 'AbortError') {
+        throw new Error('زمان درخواست به API تمام شد');
+      }
+      throw error;
     }
-
-    const data = await response.json();
-    return data.choices[0].message.content;
   }
 
   private async callOllama(prompt: string, model: string): Promise<string> {
-    const response = await fetch('http://localhost:11434/api/generate', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model,
-        prompt,
-        stream: false
-      })
-    });
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 60000); // 60 second timeout for local
 
-    if (!response.ok) {
-      throw new Error('خطای API Ollama');
+    try {
+      const response = await fetch('http://localhost:11434/api/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model,
+          prompt,
+          stream: false
+        }),
+        signal: controller.signal
+      });
+
+      clearTimeout(timeoutId);
+
+      if (!response.ok) {
+        throw new Error('خطای API Ollama');
+      }
+
+      const data = await response.json();
+      return data.response;
+    } catch (error: any) {
+      clearTimeout(timeoutId);
+      if (error.name === 'AbortError') {
+        throw new Error('زمان درخواست به Ollama تمام شد');
+      }
+      throw error;
     }
-
-    const data = await response.json();
-    return data.response;
   }
 
   private parseResponse(response: string, currentPrice: number): MarketAnalysis {

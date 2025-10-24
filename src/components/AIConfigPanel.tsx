@@ -2,8 +2,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AIConfig, AIProvider } from '@/services/aiService';
-import { Brain } from 'lucide-react';
+import { Brain, AlertCircle } from 'lucide-react';
 
 interface AIConfigPanelProps {
   config: AIConfig;
@@ -11,6 +12,8 @@ interface AIConfigPanelProps {
 }
 
 const AIConfigPanel = ({ config, onChange }: AIConfigPanelProps) => {
+  const hasApiKey = config.provider === 'ollama' || (config.apiKey && config.apiKey.length > 0);
+
   return (
     <Card>
       <CardHeader>
@@ -20,6 +23,15 @@ const AIConfigPanel = ({ config, onChange }: AIConfigPanelProps) => {
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
+        {!hasApiKey && (
+          <Alert variant="destructive">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>
+              برای استفاده از ربات معاملاتی، لطفاً کلید API را وارد کنید یا از Ollama استفاده کنید.
+            </AlertDescription>
+          </Alert>
+        )}
+
         <div className="space-y-2">
           <Label>ارائه‌دهنده هوش مصنوعی</Label>
           <Select
@@ -30,9 +42,9 @@ const AIConfigPanel = ({ config, onChange }: AIConfigPanelProps) => {
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="openai">OpenAI</SelectItem>
+              <SelectItem value="openai">OpenAI (توصیه می‌شود)</SelectItem>
               <SelectItem value="openrouter">OpenRouter</SelectItem>
-              <SelectItem value="ollama">Ollama (محلی)</SelectItem>
+              <SelectItem value="ollama">Ollama (محلی - رایگان)</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -46,6 +58,11 @@ const AIConfigPanel = ({ config, onChange }: AIConfigPanelProps) => {
               value={config.apiKey || ''}
               onChange={(e) => onChange({ ...config, apiKey: e.target.value })}
             />
+            <p className="text-xs text-muted-foreground">
+              {config.provider === 'openai' 
+                ? 'کلید API را از platform.openai.com دریافت کنید'
+                : 'کلید API را از openrouter.ai دریافت کنید'}
+            </p>
           </div>
         )}
 
@@ -60,6 +77,11 @@ const AIConfigPanel = ({ config, onChange }: AIConfigPanelProps) => {
             value={config.model || ''}
             onChange={(e) => onChange({ ...config, model: e.target.value })}
           />
+          <p className="text-xs text-muted-foreground">
+            {config.provider === 'openai' && 'مدل پیشنهادی: gpt-3.5-turbo یا gpt-4'}
+            {config.provider === 'openrouter' && 'مدل پیشنهادی: openai/gpt-3.5-turbo'}
+            {config.provider === 'ollama' && 'مدل پیشنهادی: llama2 یا mistral'}
+          </p>
         </div>
 
         {config.provider === 'ollama' && (
@@ -70,6 +92,9 @@ const AIConfigPanel = ({ config, onChange }: AIConfigPanelProps) => {
               value={config.baseURL || ''}
               onChange={(e) => onChange({ ...config, baseURL: e.target.value })}
             />
+            <p className="text-xs text-muted-foreground">
+              مطمئن شوید که Ollama در حال اجرا است
+            </p>
           </div>
         )}
 
@@ -77,8 +102,9 @@ const AIConfigPanel = ({ config, onChange }: AIConfigPanelProps) => {
           <p className="font-medium">راهنما:</p>
           <ul className="list-disc list-inside space-y-1 text-xs">
             <li>برای OpenAI: کلید API از platform.openai.com دریافت کنید</li>
-            <li>برای OpenRouter: کلید API از openrouter.ai دریافت کنید</li>
-            <li>برای Ollama: ابتدا Ollama را روی سیستم خود نصب کنید</li>
+            <li>برای OpenRouter: کلید API از openrouter.ai دریافت کنید (ارزان‌تر)</li>
+            <li>برای Ollama: ابتدا Ollama را روی سیستم خود نصب و اجرا کنید (رایگان)</li>
+            <li>توصیه: برای شروع از OpenAI با مدل gpt-3.5-turbo استفاده کنید</li>
           </ul>
         </div>
       </CardContent>
