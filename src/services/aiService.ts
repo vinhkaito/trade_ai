@@ -69,57 +69,59 @@ export class AIService {
   ): string {
     const currentPosition = positions.find(p => p.symbol === symbol);
     
-    return `You are a professional crypto trader analyzing ${symbol}. Provide a detailed trading decision.
+    return `شما یک معامله‌گر حرفه‌ای ارزهای دیجیتال هستید که در حال تحلیل ${symbol} می‌باشید. لطفاً یک تصمیم معاملاتی دقیق ارائه دهید.
 
-CURRENT MARKET STATE FOR ${symbol}
-Current Price: $${price}
-Current EMA(20): $${indicators.ema20}
-Current MACD: ${indicators.macd.toFixed(3)}
-Current RSI(7): ${indicators.rsi7.toFixed(2)}
-Current RSI(14): ${indicators.rsi14.toFixed(2)}
+وضعیت فعلی بازار برای ${symbol}
+قیمت فعلی: $${price}
+EMA(20) فعلی: $${indicators.ema20.toFixed(2)}
+MACD فعلی: ${indicators.macd.toFixed(3)}
+RSI(7) فعلی: ${indicators.rsi7.toFixed(2)}
+RSI(14) فعلی: ${indicators.rsi14.toFixed(2)}
 
-Intraday Price History (oldest → newest):
+تاریخچه قیمت در بازه زمانی کوتاه (قدیمی‌ترین → جدیدترین):
 ${indicators.priceHistory.slice(-10).map((p: number) => p.toFixed(2)).join(', ')}
 
-EMA(20) History:
+تاریخچه EMA(20):
 ${indicators.emaHistory.slice(-10).map((e: number) => e.toFixed(2)).join(', ')}
 
-MACD History:
+تاریخچه MACD:
 ${indicators.macdHistory.slice(-10).map((m: number) => m.toFixed(3)).join(', ')}
 
-RSI(7) History:
+تاریخچه RSI(7):
 ${indicators.rsiHistory.slice(-10).map((r: number) => r.toFixed(2)).join(', ')}
 
-YOUR ACCOUNT INFORMATION
-Portfolio Value: $${portfolioValue.toFixed(2)}
-Available Cash: $${cash.toFixed(2)}
+اطلاعات حساب شما
+ارزش کل پرتفوی: $${portfolioValue.toFixed(2)}
+موجودی نقد در دسترس: $${cash.toFixed(2)}
 
 ${currentPosition ? `
-CURRENT POSITION IN ${symbol}:
-Quantity: ${currentPosition.quantity}
-Entry Price: $${currentPosition.entryPrice}
-Current Price: $${price}
-Unrealized P&L: $${currentPosition.unrealizedPnl.toFixed(2)}
-Stop Loss: $${currentPosition.stopLoss || 'Not set'}
-Take Profit: $${currentPosition.takeProfit || 'Not set'}
-` : 'No current position in this asset.'}
+پوزیشن فعلی در ${symbol}:
+مقدار: ${currentPosition.quantity}
+قیمت ورود: $${currentPosition.entryPrice}
+قیمت فعلی: $${price}
+سود/زیان تحقق نیافته: $${currentPosition.unrealizedPnl.toFixed(2)}
+حد ضرر: $${currentPosition.stopLoss || 'تنظیم نشده'}
+حد سود: $${currentPosition.takeProfit || 'تنظیم نشده'}
+` : `هیچ پوزیشن فعالی در این دارایی وجود ندارد.`}
 
-INSTRUCTIONS:
-1. Analyze the technical indicators (EMA, MACD, RSI)
-2. Consider the trend direction and momentum
-3. Evaluate risk/reward ratio
-4. Provide your decision: BUY, SELL, or HOLD
+دستورالعمل‌ها:
+1. اندیکاتورهای تکنیکال (EMA، MACD، RSI) را تحلیل کنید
+2. جهت روند و مومنتوم را در نظر بگیرید
+3. نسبت ریسک به ریوارد را ارزیابی کنید
+4. تصمیم خود را مشخص کنید: خرید (BUY)، فروش (SELL)، یا نگهداری (HOLD)
 
-Respond in this EXACT JSON format:
+پاسخ خود را دقیقاً به این فرمت JSON ارائه دهید (همه توضیحات باید به فارسی باشد):
 {
-  "chainOfThought": "Your detailed analysis process here. Explain what you see in the data, why you're making this decision, and what conditions would invalidate your thesis.",
+  "chainOfThought": "فرآیند تفکر و تحلیل دقیق خود را اینجا توضیح دهید. بگویید چه چیزی در داده‌ها می‌بینید، چرا این تصمیم را می‌گیرید و چه شرایطی باعث باطل شدن این تحلیل می‌شود.",
   "decision": "BUY|SELL|HOLD",
   "confidence": 0.0-1.0,
-  "reasoning": "Brief summary of your decision",
-  "stopLoss": price_number,
-  "takeProfit": price_number,
-  "invalidationCondition": "What would make you exit this trade"
-}`;
+  "reasoning": "خلاصه کوتاه از تصمیم شما به فارسی",
+  "stopLoss": قیمت_عددی,
+  "takeProfit": قیمت_عددی,
+  "invalidationCondition": "شرایطی که باعث خروج از معامله می‌شود"
+}
+
+مهم: تمام توضیحات و تحلیل‌ها باید به زبان فارسی باشد.`;
   }
 
   private async callAI(prompt: string): Promise<string> {
@@ -130,7 +132,7 @@ Respond in this EXACT JSON format:
     }
 
     if (!apiKey) {
-      throw new Error('API key required for this provider');
+      throw new Error('کلید API برای این ارائه‌دهنده الزامی است');
     }
 
     const url = baseURL || (provider === 'openrouter' 
@@ -152,7 +154,7 @@ Respond in this EXACT JSON format:
         messages: [
           { 
             role: 'system', 
-            content: 'You are a professional crypto trading analyst with expertise in technical analysis. Always respond with valid JSON.' 
+            content: 'شما یک تحلیلگر حرفه‌ای معاملات ارزهای دیجیتال با تخصص در تحلیل تکنیکال هستید. همیشه پاسخ‌های خود را به صورت JSON معتبر و به زبان فارسی ارائه دهید.' 
           },
           { role: 'user', content: prompt }
         ],
@@ -162,7 +164,7 @@ Respond in this EXACT JSON format:
 
     if (!response.ok) {
       const errorText = await response.text();
-      throw new Error(`AI API error: ${response.statusText} - ${errorText}`);
+      throw new Error(`خطای API هوش مصنوعی: ${response.statusText} - ${errorText}`);
     }
 
     const data = await response.json();
@@ -181,7 +183,7 @@ Respond in this EXACT JSON format:
     });
 
     if (!response.ok) {
-      throw new Error('Ollama API error');
+      throw new Error('خطای API Ollama');
     }
 
     const data = await response.json();
@@ -196,15 +198,15 @@ Respond in this EXACT JSON format:
         return {
           decision: parsed.decision || 'HOLD',
           confidence: parsed.confidence || 0.5,
-          reasoning: parsed.reasoning || 'AI analysis',
-          chainOfThought: parsed.chainOfThought || 'No detailed analysis provided',
+          reasoning: parsed.reasoning || 'تحلیل هوش مصنوعی',
+          chainOfThought: parsed.chainOfThought || 'تحلیل دقیق ارائه نشده است',
           stopLoss: parsed.stopLoss,
           takeProfit: parsed.takeProfit,
           invalidationCondition: parsed.invalidationCondition
         };
       }
     } catch (e) {
-      console.error('Failed to parse AI response:', e);
+      console.error('خطا در تجزیه پاسخ هوش مصنوعی:', e);
     }
 
     return this.fallbackAnalysis({ rsi7: 50, rsi14: 50, macd: 0, ema20: currentPrice }, currentPrice);
@@ -220,11 +222,11 @@ Respond in this EXACT JSON format:
       return {
         decision: 'BUY',
         confidence: 0.75,
-        reasoning: 'RSI oversold with bullish MACD and price above EMA',
-        chainOfThought: 'Technical analysis shows oversold conditions (RSI < 30) combined with bullish momentum (MACD > 0) and price trading above the 20-period EMA, suggesting a potential reversal.',
+        reasoning: 'RSI در ناحیه اشباع فروش با MACD صعودی و قیمت بالاتر از EMA',
+        chainOfThought: 'تحلیل تکنیکال نشان می‌دهد که شرایط اشباع فروش (RSI < 30) همراه با مومنتوم صعودی (MACD > 0) و قیمت بالاتر از میانگین متحرک نمایی 20 دوره‌ای، احتمال بازگشت قیمت به سمت بالا را نشان می‌دهد.',
         stopLoss: price * 0.98,
         takeProfit: price * 1.04,
-        invalidationCondition: 'Price closes below EMA20'
+        invalidationCondition: 'قیمت زیر EMA20 بسته شود'
       };
     }
     
@@ -232,18 +234,18 @@ Respond in this EXACT JSON format:
       return {
         decision: 'SELL',
         confidence: 0.75,
-        reasoning: 'RSI overbought with bearish MACD and price below EMA',
-        chainOfThought: 'Market showing overbought conditions (RSI > 70) with bearish momentum (MACD < 0) and price below EMA20, indicating potential downside.',
-        invalidationCondition: 'Price closes above EMA20'
+        reasoning: 'RSI در ناحیه اشباع خرید با MACD نزولی و قیمت پایین‌تر از EMA',
+        chainOfThought: 'بازار شرایط اشباع خرید (RSI > 70) را با مومنتوم نزولی (MACD < 0) و قیمت پایین‌تر از EMA20 نشان می‌دهد که احتمال ریزش قیمت را افزایش می‌دهد.',
+        invalidationCondition: 'قیمت بالاتر از EMA20 بسته شود'
       };
     }
 
     return {
       decision: 'HOLD',
       confidence: 0.5,
-      reasoning: 'No clear trading signal',
-      chainOfThought: 'Current market conditions do not present a clear trading opportunity. RSI is neutral, MACD shows mixed signals. Best to wait for clearer setup.',
-      invalidationCondition: 'N/A'
+      reasoning: 'سیگنال معاملاتی واضحی وجود ندارد',
+      chainOfThought: 'شرایط فعلی بازار فرصت معاملاتی مشخصی ارائه نمی‌دهد. RSI در حالت خنثی است و MACD سیگنال‌های مختلطی نشان می‌دهد. بهتر است منتظر سیگنال واضح‌تری بمانیم.',
+      invalidationCondition: 'ندارد'
     };
   }
 }
