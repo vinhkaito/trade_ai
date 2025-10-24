@@ -1,19 +1,23 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Portfolio, Trade, AIDecision } from '@/types/trading';
+import { Portfolio, Trade, AIDecision, TradingStrategy } from '@/types/trading';
 import { PortfolioManager } from '@/services/portfolioManager';
 import { TechnicalIndicators } from '@/services/technicalIndicators';
 import { AIService, AIConfig } from '@/services/aiService';
 import { CryptoPricesResponse, PriceHistory } from '@/types/crypto';
 
-const portfolioManager = new PortfolioManager();
+let portfolioManager: PortfolioManager;
 
 export const useTradingBot = (
   prices: CryptoPricesResponse | null,
   priceHistory: Record<string, PriceHistory[]>,
   isEnabled: boolean,
-  aiConfig: AIConfig
+  aiConfig: AIConfig,
+  strategy: TradingStrategy
 ) => {
-  const [portfolio, setPortfolio] = useState<Portfolio>(portfolioManager.getPortfolio());
+  const [portfolio, setPortfolio] = useState<Portfolio>(() => {
+    portfolioManager = new PortfolioManager(strategy);
+    return portfolioManager.getPortfolio();
+  });
   const [decisions, setDecisions] = useState<AIDecision[]>([]);
   const [aiReports, setAiReports] = useState<Array<{
     timestamp: number;
@@ -24,6 +28,13 @@ export const useTradingBot = (
     confidence: number;
   }>>([]);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+
+  // Update strategy when it changes
+  useEffect(() => {
+    if (portfolioManager) {
+      portfolioManager.setStrategy(strategy);
+    }
+  }, [strategy]);
 
   const analyzeAndTrade = useCallback(async () => {
     if (!prices || !isEnabled || isAnalyzing) return;
@@ -46,7 +57,6 @@ export const useTradingBot = (
       const emaValues: number[] = [];
       const macdValues: number[] = [];
 
-      // Calculate historical indicators
       for (let i = 14; i < priceValues.length; i++) {
         const slice = priceValues.slice(0, i + 1);
         rsi7Values.push(TechnicalIndicators.calculateRSI(slice, 7));
@@ -97,23 +107,20 @@ export const useTradingBot = (
         confidence: analysis.confidence
       });
 
-      // Execute trades based on AI decision
-      if (decision.action !== 'HOLD' && decision.confidence > 0.65) {
-        const riskPercent = 0.02 + (decision.confidence * 0.03);
-        const riskAmount = portfolio.cash * riskPercent;
-        const quantity = Math.floor((riskAmount / priceData.price) * 100) / 100;
+      if (decision.action !== 'HOLD') {
+        const quantity = portfolioManager.calculatePositionSize(decision, priceData.price);
 
         if (quantity > 0 && decision.action === 'BUY') {
           const trade = portfolioManager.executeTrade(decision, priceData.price, quantity);
           if (trade) {
-            console.log('Trade executed:', trade);
+            console.log('معامله انجام شد:', trade);
           }
         } else if (decision.action === 'SELL') {
           const position = portfolio.positions.find(p => p.symbol === symbol);
           if (position) {
             const trade = portfolioManager.executeTrade(decision, priceData.price, position.quantity);
             if (trade) {
-              console.log('Position closed:', trade);
+              console.log('پوزیشن بسته شد:', trade);
             }
           }
         }
