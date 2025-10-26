@@ -5,17 +5,22 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@/components/ui/switch';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
+import { Slider } from '@/components/ui/slider';
 import { ExchangeConfig, ExchangeType, TradingMode } from '@/types/exchange';
-import { Building2, AlertCircle, Shield, Zap } from 'lucide-react';
+import { Building2, AlertCircle, Shield, Zap, DollarSign } from 'lucide-react';
 
 interface ExchangeConfigPanelProps {
   config: ExchangeConfig;
   onChange: (config: ExchangeConfig) => void;
+  initialBalance: number;
+  onBalanceChange: (balance: number) => void;
 }
 
-const ExchangeConfigPanel = ({ config, onChange }: ExchangeConfigPanelProps) => {
+const ExchangeConfigPanel = ({ config, onChange, initialBalance, onBalanceChange }: ExchangeConfigPanelProps) => {
   const isLiveMode = config.mode === 'live';
   const hasCredentials = config.credentials?.apiKey && config.credentials?.apiSecret;
+
+  const presetBalances = [1000, 5000, 10000, 25000, 50000, 100000];
 
   return (
     <Card dir="rtl">
@@ -71,6 +76,76 @@ const ExchangeConfigPanel = ({ config, onChange }: ExchangeConfigPanelProps) => 
             </div>
           </div>
         </div>
+
+        {/* Initial Balance for Demo Mode */}
+        {config.mode === 'demo' && (
+          <div className="space-y-4 p-4 bg-blue-50 rounded-lg border-2 border-blue-200">
+            <div className="flex items-center gap-2">
+              <DollarSign className="w-5 h-5 text-blue-600" />
+              <Label className="text-right block text-base font-semibold">موجودی اولیه (مجازی)</Label>
+            </div>
+            
+            {/* Preset Buttons */}
+            <div className="grid grid-cols-3 gap-2">
+              {presetBalances.map((amount) => (
+                <button
+                  key={amount}
+                  onClick={() => onBalanceChange(amount)}
+                  className={`p-3 rounded-lg border-2 transition-all text-sm font-medium ${
+                    initialBalance === amount
+                      ? 'border-blue-500 bg-blue-100 text-blue-900'
+                      : 'border-gray-300 bg-white hover:border-blue-300'
+                  }`}
+                >
+                  ${amount.toLocaleString()}
+                </button>
+              ))}
+            </div>
+
+            {/* Custom Amount Input */}
+            <div className="space-y-2">
+              <Label className="text-right block text-sm">مبلغ دلخواه</Label>
+              <div className="flex items-center gap-2">
+                <span className="text-lg font-bold">$</span>
+                <Input
+                  type="number"
+                  min="100"
+                  max="1000000"
+                  step="100"
+                  value={initialBalance}
+                  onChange={(e) => onBalanceChange(Number(e.target.value))}
+                  className="text-right text-lg font-bold"
+                />
+              </div>
+            </div>
+
+            {/* Slider */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <Label className="text-sm text-muted-foreground">$100</Label>
+                <Label className="text-sm font-bold text-blue-600">
+                  ${initialBalance.toLocaleString()}
+                </Label>
+                <Label className="text-sm text-muted-foreground">$100,000</Label>
+              </div>
+              <Slider
+                value={[initialBalance]}
+                onValueChange={([value]) => onBalanceChange(value)}
+                min={100}
+                max={100000}
+                step={100}
+                className="w-full"
+              />
+            </div>
+
+            <Alert className="bg-blue-100 border-blue-300">
+              <AlertCircle className="h-4 w-4 text-blue-600" />
+              <AlertDescription className="text-right text-blue-900">
+                این مبلغ فقط برای شبیه‌سازی است و هیچ ارزش واقعی ندارد. می‌توانید با هر مبلغی که می‌خواهید شروع کنید.
+              </AlertDescription>
+            </Alert>
+          </div>
+        )}
 
         {isLiveMode && !hasCredentials && (
           <Alert variant="destructive">
@@ -190,6 +265,7 @@ const ExchangeConfigPanel = ({ config, onChange }: ExchangeConfigPanelProps) => 
             {config.mode === 'demo' ? (
               <>
                 <li>در حالت آزمایشی با پول مجازی معامله می‌کنید</li>
+                <li>موجودی اولیه را به دلخواه خود تنظیم کنید</li>
                 <li>هیچ ریسک مالی وجود ندارد</li>
                 <li>برای یادگیری و تست استراتژی مناسب است</li>
               </>

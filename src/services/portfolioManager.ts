@@ -2,22 +2,28 @@ import { Portfolio, Position, Trade, AIDecision, TradingStrategy } from '@/types
 
 export class PortfolioManager {
   private portfolio: Portfolio;
-  private readonly INITIAL_CASH = 10000;
+  private initialCash: number;
   private strategy: TradingStrategy;
   private trailingStops: Map<string, number> = new Map();
 
-  constructor(strategy?: TradingStrategy) {
+  constructor(strategy?: TradingStrategy, initialBalance?: number) {
+    this.initialCash = initialBalance || 10000;
+    
     const savedPortfolio = localStorage.getItem('trading-portfolio');
-    if (savedPortfolio) {
+    const savedInitialCash = localStorage.getItem('trading-initial-cash');
+    
+    if (savedPortfolio && savedInitialCash) {
       this.portfolio = JSON.parse(savedPortfolio);
+      this.initialCash = Number(savedInitialCash);
     } else {
       this.portfolio = {
-        cash: this.INITIAL_CASH,
-        totalValue: this.INITIAL_CASH,
+        cash: this.initialCash,
+        totalValue: this.initialCash,
         positions: [],
         trades: [],
         totalReturn: 0,
       };
+      this.saveInitialCash();
     }
     
     this.strategy = strategy || {
@@ -36,6 +42,15 @@ export class PortfolioManager {
       maxLeverage: 10,
       diversification: true,
     };
+  }
+
+  setInitialBalance(balance: number) {
+    this.initialCash = balance;
+    this.saveInitialCash();
+  }
+
+  getInitialBalance(): number {
+    return this.initialCash;
   }
 
   setStrategy(strategy: TradingStrategy) {
@@ -211,14 +226,14 @@ export class PortfolioManager {
     });
 
     this.portfolio.totalValue = this.portfolio.cash + totalPositionValue;
-    this.portfolio.totalReturn = ((this.portfolio.totalValue - this.INITIAL_CASH) / this.INITIAL_CASH) * 100;
+    this.portfolio.totalReturn = ((this.portfolio.totalValue - this.initialCash) / this.initialCash) * 100;
     this.savePortfolio();
   }
 
   resetPortfolio(): void {
     this.portfolio = {
-      cash: this.INITIAL_CASH,
-      totalValue: this.INITIAL_CASH,
+      cash: this.initialCash,
+      totalValue: this.initialCash,
       positions: [],
       trades: [],
       totalReturn: 0,
@@ -229,5 +244,9 @@ export class PortfolioManager {
 
   private savePortfolio(): void {
     localStorage.setItem('trading-portfolio', JSON.stringify(this.portfolio));
+  }
+
+  private saveInitialCash(): void {
+    localStorage.setItem('trading-initial-cash', this.initialCash.toString());
   }
 }

@@ -16,10 +16,11 @@ export const useTradingBot = (
   priceHistory: Record<string, PriceHistory[]>,
   isEnabled: boolean,
   aiConfig: AIConfig,
-  strategy: TradingStrategy
+  strategy: TradingStrategy,
+  initialBalance: number
 ) => {
   const [portfolio, setPortfolio] = useState<Portfolio>(() => {
-    portfolioManager = new PortfolioManager(strategy);
+    portfolioManager = new PortfolioManager(strategy, initialBalance);
     return portfolioManager.getPortfolio();
   });
   const [decisions, setDecisions] = useState<AIDecision[]>([]);
@@ -34,6 +35,13 @@ export const useTradingBot = (
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const lastAnalysisTime = useRef<number>(0);
   const ANALYSIS_COOLDOWN = 10000; // 10 seconds between full analysis cycles
+
+  // Update initial balance when it changes
+  useEffect(() => {
+    if (portfolioManager) {
+      portfolioManager.setInitialBalance(initialBalance);
+    }
+  }, [initialBalance]);
 
   // Update strategy when it changes
   useEffect(() => {

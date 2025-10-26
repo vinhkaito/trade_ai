@@ -26,8 +26,12 @@ const Index = () => {
   });
   const [strategy, setStrategy] = useState<TradingStrategy>(DEFAULT_STRATEGIES.moderate);
   const [exchangeConfig, setExchangeConfig] = useState<ExchangeConfig>({
-    type: '  binance',
+    type: 'binance',
     mode: 'demo',
+  });
+  const [initialBalance, setInitialBalance] = useState<number>(() => {
+    const saved = localStorage.getItem('trading-initial-cash');
+    return saved ? Number(saved) : 10000;
   });
 
   const { portfolio, decisions, aiReports, isAnalyzing, resetPortfolio } = useTradingBot(
@@ -35,8 +39,14 @@ const Index = () => {
     priceHistory,
     isBotEnabled,
     aiConfig,
-    strategy
+    strategy,
+    initialBalance
   );
+
+  const handleBalanceChange = (balance: number) => {
+    setInitialBalance(balance);
+    localStorage.setItem('trading-initial-cash', balance.toString());
+  };
 
   if (isLoading) {
     return (
@@ -96,7 +106,12 @@ const Index = () => {
 
           <TabsContent value="exchange">
             <div className="max-w-2xl">
-              <ExchangeConfigPanel config={exchangeConfig} onChange={setExchangeConfig} />
+              <ExchangeConfigPanel 
+                config={exchangeConfig} 
+                onChange={setExchangeConfig}
+                initialBalance={initialBalance}
+                onBalanceChange={handleBalanceChange}
+              />
             </div>
           </TabsContent>
 
