@@ -1107,8 +1107,8 @@ SOFTWARE.
 ### ارتباط با توسعه‌دهنده
 
 - 🌐 وبسایت: [jahaniwww.com](https://jahaniwww.com)
-- 📧 ایمیل: support@jahaniwww.com
-- 💬 تلگرام: @YourTelegramHandle
+- 📧 ایمیل: satreyek@gmail.com
+- 💬 تلگرام: https://t.me/satreyek
 
 ## 🙏 تشکر و قدردانی
 
