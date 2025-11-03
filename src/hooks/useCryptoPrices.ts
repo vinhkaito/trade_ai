@@ -12,43 +12,72 @@ export const useCryptoPrices = () => {
   const [error, setError] = useState<string | null>(null);
 
   const fetchPrices = useCallback(async () => {
-    const response = await fetch(API_URL);
-    if (!response.ok) {
-      throw new Error('Failed to fetch crypto prices');
+    try {
+      const response = await fetch(API_URL);
+      
+      // Check if response is OK
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      // Check content type
+      const contentType = response.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        const text = await response.text();
+        console.error('Received non-JSON response:', text);
+        throw new Error('دریافت داده ناموفق بود. پاسخ سرور معتبر نیست.');
+      }
+      
+      const data: CryptoPricesResponse = await response.json();
+      return data;
+    } catch (err: any) {
+      console.error('Error fetching crypto prices:', err);
+      
+      // More specific error messages
+      if (err instanceof TypeError) {
+        throw new Error('خطا در اتصال به سرور. لطفاً اتصال اینترنت خود را بررسی کنید.');
+      } else if (err.message.includes('HTTP error')) {
+        throw new Error(`خطای سرور: ${err.message}`);
+      } else {
+        throw new Error('خطا در دریافت قیمت‌ها: ' + (err.message || 'خطای نامشخص'));
+      }
     }
-    const data: CryptoPricesResponse = await response.json();
-    return data;
   }, []);
 
   useEffect(() => {
     let intervalId: NodeJS.Timeout;
 
     const updatePrices = async () => {
-      const data = await fetchPrices();
-      setPrices(data);
-      setIsLoading(false);
-      setError(null);
+      try {
+        const data = await fetchPrices();
+        setPrices(data);
+        setIsLoading(false);
+        setError(null);
 
-      // Update price history for each crypto
-      setPriceHistory((prev) => {
-        const updated = { ...prev };
-        
-        Object.entries(data.prices).forEach(([symbol, priceData]) => {
-          if (!updated[symbol]) {
-            updated[symbol] = [];
-          }
+        // Update price history for each crypto
+        setPriceHistory((prev) => {
+          const updated = { ...prev };
           
-          updated[symbol] = [
-            ...updated[symbol],
-            {
-              timestamp: priceData.timestamp,
-              price: priceData.price,
-            },
-          ].slice(-MAX_HISTORY_POINTS); // Keep only last MAX_HISTORY_POINTS
+          Object.entries(data.prices).forEach(([symbol, priceData]) => {
+            if (!updated[symbol]) {
+              updated[symbol] = [];
+            }
+            
+            updated[symbol] = [
+              ...updated[symbol],
+              {
+                timestamp: priceData.timestamp,
+                price: priceData.price,
+              },
+            ].slice(-MAX_HISTORY_POINTS); // Keep only last MAX_HISTORY_POINTS
+          });
+          
+          return updated;
         });
-        
-        return updated;
-      });
+      } catch (err: any) {
+        setError(err.message);
+        setIsLoading(false);
+      }
     };
 
     // Initial fetch
